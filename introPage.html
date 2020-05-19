@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Intro Page</title>
+    <!-- <meta http-equiv="refresh" content="7; url = index.html" /> -->
+    <style>
+        body {
+            margin: 144px auto;
+        }
+        
+        button {
+            border: none;
+            background: #FFF200;
+            font-weight: 150;
+            padding: 15px;
+            text-transform: uppercase;
+            border-radius: 20px;
+            display: block;
+            transition: all 0.3s ease 0s;
+            width: 30%;
+            /* height: 60px; */
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+            /* margin-left: 20%; */
+            margin: 0.5% auto;
+            outline: none;
+            position: relative;
+            top: 55%;
+        }
+        
+        button:hover {
+            font-weight: 700 !important;
+            letter-spacing: 3px;
+            /*box-shadow: #3342CC 2px;*/
+            box-shadow: 0px 8px 10px white;
+            /* #3342CC */
+            cursor: pointer;
+            transition: all 0.3s ease 0s;
+        }
+        
+        div {
+            border: 6px solid black;
+            margin-left: 30%;
+            box-shadow: 5px 5px 5px black;
+            width: 44%;
+            height: 450px;
+            color: white;
+            background-image: url('pacManMenu.jpg');
+            background-size: 100% 100%;
+        }
+        
+        #helpBody {
+            display: none;
+            text-align: center;
+        }
+        
+        #helpBody section {
+            /* border: 5px solid white; */
+            border-radius: 15px;
+            /* box-shadow: 2px 2px 2px white; */
+            width: 60%;
+            /* padding: 1%; */
+            font-size: medium;
+            background-color: black;
+            color: yellow;
+            position: relative;
+            top: 35%;
+            margin: 1px auto;
+        }
+        
+        #helpBody section #winParagraph {
+            column-count: 2;
+        }
+        
+        #backBtn,
+        #backBtnInPatterns {
+            position: relative;
+            top: 0%;
+            left: 42%;
+            width: 12%;
+        }
+        
+        #soundBtn {
+            position: relative;
+            top: 0%;
+            left: 42%;
+            width: 15%;
+        }
+        
+        #patterns {
+            text-align: center;
+            display: none;
+        }
+        
+        #patterns img {
+            display: inline-block;
+            height: 140px;
+            width: 30%;
+            position: relative;
+            top: 1%;
+        }
+        
+        #patterns h2 {
+            color: black;
+            background-color: yellow;
+            border: none;
+            background: #FFF200;
+            font-weight: 150;
+            padding: 5px;
+            border-radius: 20px;
+            transition: all 0.3s ease 0s;
+            width: 50%;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+            margin: 0.25% auto;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <audio autoplay="autoplay" loop="loop" src="pacman_beginning.wav"></audio>
+
+    <div id="mainList">
+        <button id="easyBtn"> Easy </button>
+        <button id="hardBtn"> Hard </button>
+        <button id="patternsBtn">Patterns</button>
+        <button id="helpBtn"> Help </button>
+    </div>
+
+    <div id="helpBody">
+        <button id="backBtn">Back</button>
+        <section>
+            <article>
+                <h3>How To Play?</h3>
+                <p>Use the arrows in your keyboard to move</p>
+            </article>
+        </section>
+        <section>
+            <article>
+                <h3>How To Win?</h3>
+                <p id="winParagraph">
+                    In Easy Levels :
+                    <br>You need To collect all the coins to win and the fruits will give you a bonus
+                    <br><br> In Hard Levels :
+                    <br>You need to collect them without any monster catch you and takecare there's a timer
+                </p>
+            </article>
+        </section>
+    </div>
+
+    <div id="patterns">
+        <button id="backBtnInPatterns">Back</button>
+        <br>
+        <h2>Easy Patterns</h2>
+        <img src="hpattern.png">
+        <img src="defaultpattern.PNG">
+        <img src="npattern.PNG">
+        <br>
+        <h2>Hard Pattern</h2>
+        <img src="hardpattern.PNG">
+        <img src="hardpattern2.PNG">
+    </div>
+
+    <script>
+        easyBtn.addEventListener('click', function() {
+            window.location.href = 'index.html'
+        })
+
+        hardBtn.addEventListener('click', function() {
+            window.location.href = 'hardLevel1.html'
+        })
+
+        patternsBtn.addEventListener('click', function() {
+            document.querySelector('#mainList').style.display = 'none'
+            document.querySelector('#patterns').style.display = 'block'
+        })
+
+        helpBtn.addEventListener('click', function(e) {
+            document.querySelector('#mainList').style.display = 'none'
+            document.querySelector('#helpBody').style.display = 'block'
+        })
+
+        backBtn.addEventListener('click', function(e) {
+            document.querySelector('#mainList').style.display = 'block'
+            document.querySelector('#helpBody').style.display = 'none'
+        })
+
+        backBtnInPatterns.addEventListener('click', function(e) {
+            document.querySelector('#mainList').style.display = 'block'
+            document.querySelector('#patterns').style.display = 'none'
+        })
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,872 @@
+<html>
+
+<head>
+    <title>PacMan V1</title>
+    <style>
+        body {
+            margin: 144px auto;
+        }
+        
+        .pacMan {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("pacman.png");
+            display: inline-block;
+        }
+        
+        .pacManLeft {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("left.png");
+            display: inline-block;
+        }
+        
+        .pacManRight {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("right.png");
+            display: inline-block;
+        }
+        
+        .pacManUp {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("up.png");
+            display: inline-block;
+        }
+        
+        .pacManDown {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("down.png");
+            display: inline-block;
+        }
+        
+        .wall {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("wall.png");
+            /* background-color: black; */
+            display: inline-block;
+        }
+        
+        .ground {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("bg.png");
+            display: inline-block;
+        }
+        
+        .coin {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("coin.png");
+            /* background-color: black; */
+            display: inline-block;
+        }
+        
+        .monster {
+            width: 8.3%;
+            height: 50px;
+            background-image: url("ghost1.png");
+            display: inline-block;
+        }
+        
+        div {
+            /* width:50px;
+            height: 50px; */
+            margin: -2px;
+            vertical-align: top;
+        }
+        
+        #world {
+            margin-left: 30%;
+            box-shadow: 5px 5px 5px darkblue;
+            width: 44%;
+        }
+        
+        header {
+            margin-top: 1%;
+            margin-bottom: 1%;
+            margin-left: 30%;
+            border: 5px solid black;
+            /* rgb(41, 49, 123) */
+            font-size: 30px;
+            color: yellow;
+            background-color: black;
+            /*rgb(51, 66, 203)*/
+            text-align: center;
+            width: 43%;
+            /* width: 595.4px; */
+            /* text-shadow: 2px 2px 2px white; */
+            box-shadow: 5px 5px 3px black;
+        }
+        
+        nav {
+            display: inline;
+        }
+        
+        header #backToMenuBtn {
+            color: yellow;
+            float: right;
+            font-size: 20px;
+            text-decoration: none;
+            margin-right: 10px;
+            background-color: black;
+            outline: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        #gameEnd {
+            display: none;
+            width: 44%;
+            /* width: 595.4px; */
+            margin-left: 30%;
+            height: 450px;
+            text-align: center;
+            background-image: url("won.gif");
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+        /* #gameEnd p {
+          font-size: 42px;
+          color: white;
+          text-shadow: 2px 2px 2px white;
+          position: relative;
+          top: 30%;
+      } */
+        
+        #gameOver {
+            display: none;
+            width: 44%;
+            /* width: 595.4px; */
+            margin-left: 30%;
+            height: 450px;
+            text-align: center;
+            background-image: url("gameOver.jpg");
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        Timer : <label id="timerLbl"></label> Score :
+        <nav></nav>
+        <button id="backToMenuBtn">Back To Menu</button>
+    </header>
+    <div id="world"></div>
+    <div id="gameEnd">
+        <!-- <p>Congratulations</p> -->
+    </div>
+    <div id="gameOver"></div>
+    <audio id="eatfruit" src="pacman_eatfruit.wav"></audio>
+    <audio id="beginnning" src="pacman_beginning.wav"></audio>
+    <audio id="winning" src="pacman_intermission.wav"></audio>
+    <audio id="losing" src="pacman_death.wav"></audio>
+
+    <script>
+        score = 0;
+        time = 30;
+        eatFlag = false;
+
+        eatfruitAudio = document.getElementById("eatfruit");
+        beginningAudio = document.getElementById("beginnning");
+        winningAudio = document.getElementById("winning");
+        gameOverAudio = document.getElementById("losing");
+
+        //1-wall 2-bg 3-coin 5-pacMan
+        //5 right, 6 left, 7 up, 8 down
+
+        var map = [
+            [1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1],
+            [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
+            [1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1],
+            [1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1],
+            [1, 2, 2, 2, 1, 1, 5, 1, 1, 2, 2, 2, 1],
+            [1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1],
+            [1, 2, 1, 1, 2, 2, 1, 2, 2, 1, 1, 2, 1],
+            [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 4, 1],
+            [1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1]
+        ];
+
+        var pacMan = {
+            x: 6,
+            y: 4
+        };
+
+        var monster = {
+            x: 11,
+            y: 7
+        };
+
+        timer = setInterval(function() {
+            time -= 1;
+            timerLbl.innerText = time;
+            timerFn();
+        }, 1000);
+
+        function timerFn() {
+            if (time == 0 || (pacMan.x == monster.x && pacMan.y == monster.y)) {
+                document.querySelector("#gameOver").style.display = "block";
+                document.querySelector("#world").style.display = "none";
+                clearInterval(timer);
+                gameOverAudio.play();
+            }
+        }
+
+        function scoreFn() {
+            document.querySelector("nav").innerText = score;
+            var coinsCount = document.querySelectorAll('.coin').length;
+            if (coinsCount == 0) {
+                document.querySelector("#gameEnd").style.display = "none";
+                document.querySelector("#world").style.display = "none";
+                clearInterval(timer);
+                winningAudio.play();
+                window.location.href = 'hardLevel2.html'
+            }
+        }
+
+        function calcScore() {
+            if (eatFlag == true) {
+                score += 5;
+                eatFlag = false;
+            }
+        }
+
+        function drawWorld() {
+            document.getElementById("world").innerHTML = "";
+            for (var y = 0; y < map.length; y++) {
+                for (var x = 0; x < map[y].length; x++) {
+                    if (map[y][x] === 1) {
+                        document.getElementById("world").innerHTML +=
+                            "<div class='wall'></div>";
+                    } else if (map[y][x] === 2) {
+                        document.getElementById("world").innerHTML +=
+                            "<div class='coin'></div>";
+                    } else if (map[y][x] === 3) {
+                        document.getElementById("world").innerHTML +=
+                            "<div class='ground'></div>";
+                    } else if (map[y][x] === 4) {
+                        document.getElementById("world").innerHTML +=
+                            "<div class='monster'></div>";
+                    } else if (map[y][x] === 5) {
+                        //right
+                        document.getElementById("world").innerHTML +=
+                            "<div class='pacMan'></div>";
+                    } else if (map[y][x] === 6) {
+                        //left
+                        document.getElementById("world").innerHTML +=
+                            "<div class='pacManLeft'></div>";
+                    } else if (map[y][x] === 7) {
+                        //up
+                        document.getElementById("world").innerHTML +=
+                            "<div class='pacManUp'></div>";
+                    } else if (map[y][x] === 8) {
+                        //down
+                        document.getElementById("world").innerHTML +=
+                            "<div class='pacManDown'></div>";
+                    }
+                }
+                document.getElementById("world").innerHTML += "<br>";
+            }
+        }
+        drawWorld();
+        scoreFn();
+
+        document.onkeydown = function(event) {
+            if (event.keyCode === 37 || event.keyCode === 65) {
+                // PACMAN MOVE LEFT
+                if (map[pacMan.y][pacMan.x - 1] !== 1) {
+                    if (map[pacMan.y][pacMan.x - 1] === 2) eatFlag = true;
+                    map[pacMan.y][pacMan.x] = 3;
+                    pacMan.x = pacMan.x - 1;
+                    map[pacMan.y][pacMan.x] = 6;
+                    if (eatFlag == true) {
+                        /*map[pacMan.y][pacMan.x] === 6 && */
+                        eatfruitAudio.play();
+                        calcScore();
+                    }
+                    drawWorld();
+                    scoreFn();
+                }
+            } else if (event.keyCode === 39 || event.keyCode === 68) {
+                // PACMAN MOVE RIGHT
+                if (map[pacMan.y][pacMan.x + 1] !== 1) {
+                    if (map[pacMan.y][pacMan.x + 1] === 2) eatFlag = true;
+                    map[pacMan.y][pacMan.x] = 3;
+                    pacMan.x = pacMan.x + 1;
+                    map[pacMan.y][pacMan.x] = 5;
+                    if (map[pacMan.y][pacMan.x] === 5 && eatFlag == true) {
+                        eatfruitAudio.play();
+                        calcScore();
+                    }
+                    drawWorld();
+                    scoreFn();
+                }
+            } else if (event.keyCode === 38 || event.keyCode === 87) {
+                // PACMAN MOVE UP
+                if (
+                    (pacMan.y === 0 && pacMan.x === 4) ||
+                    (pacMan.y === 0 && pacMan.x === 8)
+                ) {
+                    map[pacMan.y][pacMan.x] = 3;
+                    pacMan.y = 8;
+                    if (map[pacMan.y][pacMan.x] !== 1) {
+                        if (map[pacMan.y - 1][pacMan.x] === 2) eatFlag = true;
+                        map[pacMan.y][pacMan.x] = 7;
+                        if (map[pacMan.y][pacMan.x] === 7 && eatFlag == true) {
+                            eatfruitAudio.play();
+                            calcScore();
+                        }
+                        drawWorld();
+                        scoreFn();
+                    }
+                } else if (map[pacMan.y - 1][pacMan.x] !== 1) {
+                    if (map[pacMan.y - 1][pacMan.x] === 2) eatFlag = true;
+                    map[pacMan.y][pacMan.x] = 3;
+                    pacMan.y = pacMan.y - 1;
+                    map[pacMan.y][pacMan.x] = 7;
+                    if (map[pacMan.y][pacMan.x] === 7 && eatFlag == true) {
+                        eatfruitAudio.play();
+                        calcScore();
+                    }
+                    drawWorld();
+                    scoreFn();
+                }
+            } else if (event.keyCode === 40 || event.keyCode === 83) {
+                // PACMAN MOVE DOWN
+                if (
+                    (pacMan.y === 8 && pacMan.x === 4) ||
+                    (pacMan.y === 8 && pacMan.x === 8)
+                ) {
+                    map[pacMan.y][pacMan.x] = 3;
+                    pacMan.y = 0;
+                    if (map[pacMan.y + 1][pacMan.x] !== 1) {
+                        if (map[pacMan.y + 1][pacMan.x] === 2) eatFlag = true;
+                        map[pacMan.y][pacMan.x] = 8;
+                        if (map[pacMan.y][pacMan.x] === 8 && eatFlag == true) {
+                            eatfruitAudio.play();
+                            calcScore();
+                        }
+                        drawWorld();
+                        scoreFn();
+                    }
+                } else if (map[pacMan.y + 1][pacMan.x] !== 1) {
+                    if (map[pacMan.y + 1][pacMan.x] === 2) eatFlag = true;
+                    map[pacMan.y][pacMan.x] = 3;
+                    pacMan.y = pacMan.y + 1;
+                    map[pacMan.y][pacMan.x] = 8;
+                    if (map[pacMan.y][pacMan.x] === 8 && eatFlag == true) {
+                        eatfruitAudio.play();
+                        calcScore();
+                    }
+                    drawWorld();
+                    scoreFn();
+                }
+            }
+        };
+
+        setInterval(function() {
+            var originalSquare;
+            console.log(monster);
+            console.log(pacMan);
+            if (pacMan.x > monster.x) {
+                if (pacMan.y > monster.y) {
+                    if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                } else if (pacMan.y < monster.y) {
+                    if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                } else if (pacMan.y == monster.y) {
+                    if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                }
+            } else if (pacMan.x < monster.x) {
+                if (pacMan.y > monster.y) {
+                    if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                } else if (pacMan.y < monster.y) {
+                    if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                } else if (pacMan.y == monster.y) {
+                    if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                }
+            } else if (pacMan.x == monster.x) {
+                if (pacMan.y > monster.y) {
+                    if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                } else if (pacMan.y < monster.y) {
+                    if (map[monster.y - 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y - 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x - 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x - 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x - 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y + 1][monster.x] !== 1) {
+                        originalSquare = map[monster.y + 1][monster.x];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.y = monster.y + 1;
+                        map[monster.y][monster.x] = 4;
+                    } else if (map[monster.y][monster.x + 1] !== 1) {
+                        originalSquare = map[monster.y][monster.x + 1];
+                        map[monster.y][monster.x] = originalSquare;
+                        monster.x = monster.x + 1;
+                        map[monster.y][monster.x] = 4;
+                    }
+                }
+            }
+            console.log(originalSquare);
+
+            drawWorld();
+            scoreFn();
+
+        }, 1000);
+
+        //     // if (pacMan.y > monster.y) {
+        //     //     if (map[monster.y + 1][monster.x] !== 1) {
+        //     //         originalSquare = map[monster.y + 1][monster.x]
+        //     //         map[monster.y][monster.x] = originalSquare;
+        //     //         monster.y = monster.y + 1;
+        //     //         map[monster.y][monster.x] = 4;
+        //     //     }
+        //     // } else if (pacMan.y < monster.y) {
+        //     //     if (map[monster.y - 1][monster.x] !== 1) {
+        //     //         originalSquare = map[monster.y - 1][monster.x]
+        //     //         map[monster.y][monster.x] = originalSquare;
+        //     //         monster.y = monster.y - 1;
+        //     //         map[monster.y][monster.x] = 4;
+        //     //     }
+        //     // } else if (pacMan.x < monster.x) {
+        //     //     if (map[monster.y][monster.x - 1] !== 1) {
+        //     //         originalSquare = map[monster.y][monster.x - 1]
+        //     //         map[monster.y][monster.x] = originalSquare;
+        //     //         monster.x = monster.x - 1;
+        //     //         map[monster.y][monster.x] = 4;
+        //     //     }
+        //     // } else if (pacMan.x > monster.x) {
+        //     //     if (map[monster.y][monster.x + 1] !== 1) {
+        //     //         originalSquare = map[monster.y][monster.x + 1]
+        //     //         map[monster.y][monster.x] = originalSquare;
+        //     //         monster.x = monster.x + 1;
+        //     //         map[monster.y][monster.x] = 4;
+        //     //     }
+        //     // }
+
+        //     // if (pacMan.y == monster.y) {
+        //     //     if (pacMan.x < monster.x) {
+        //     //         if (map[monster.y][monster.x - 1] !== 1) {
+        //     //             originalSquare = map[monster.y][monster.x - 1]
+        //     //             map[monster.y][monster.x] = originalSquare;
+        //     //             monster.x = monster.x - 1;
+        //     //             map[monster.y][monster.x] = 4;
+        //     //         }
+        //     //     } else if (pacMan.x > monster.x) {
+        //     //         if (map[monster.y][monster.x + 1] !== 1) {
+        //     //             originalSquare = map[monster.y][monster.x + 1]
+        //     //             map[monster.y][monster.x] = originalSquare;
+        //     //             monster.x = monster.x + 1;
+        //     //             map[monster.y][monster.x] = 4;
+        //     //         }
+        //     //     }
+        //     // } else if (pacMan.x == monster.x) {
+        //     //     if (pacMan.y > monster.y) {
+        //     //         if (map[monster.y + 1][monster.x] !== 1) {
+        //     //             originalSquare = map[monster.y + 1][monster.x]
+        //     //             map[monster.y][monster.x] = originalSquare;
+        //     //             monster.y = monster.y + 1;
+        //     //             map[monster.y][monster.x] = 4;
+        //     //         }
+        //     //     } else if (pacMan.y < monster.y) {
+        //     //         if (map[monster.y - 1][monster.x] !== 1) {
+        //     //             originalSquare = map[monster.y - 1][monster.x]
+        //     //             map[monster.y][monster.x] = originalSquare;
+        //     //             monster.y = monster.y - 1;
+        //     //             map[monster.y][monster.x] = 4;
+        //     //         }
+        //     //     }
+        //     // }
+
+        //     // if (map[monster.y][monster.x - 1] !== 1 && (pacMan.x < monster.x)) {
+        //     //     map[monster.y][monster.x] = 2;
+        //     //     monster.x = monster.x - 1;
+        //     //     map[monster.y][monster.x] = 4;
+        //     // } else if ((map[monster.y - 1][monster.x] !== 1) && pacMan.y < monster.y) {
+        //     //     map[monster.y][monster.x] = 2;
+        //     //     monster.y = monster.y - 1;
+        //     //     map[monster.y][monster.x] = 4;
+        //     // } else if (map[monster.y][monster.x + 1] !== 1 && (pacMan.x > monster.x)) {
+        //     //     map[monster.y][monster.x] = 2;
+        //     //     monster.x = monster.x + 1;
+        //     //     map[monster.y][monster.x] = 4;
+        //     // } else if ((map[monster.y + 1][monster.x] !== 1) && pacMan.y > monster.y) {
+        //     //     map[monster.y][monster.x] = 2;
+        //     //     monster.y = monster.y + 1;
+        //     //     map[monster.y][monster.x] = 4;
+        //     // }
+        //     drawWorld();
+        //     scoreFn();
+        // }, 1000);
+
+        // xFlag = false;
+        // yFlag = false;
+
+
+
+
+
+        // setInterval(function() {
+        //     var originalSquare;
+
+
+        //     console.log(monster);
+        //     console.log(pacMan);
+
+        //     if (pacMan.x > monster.x) {
+        //         if (map[monster.y][monster.x + 1] !== 1) {
+        //             originalSquare = map[monster.y][monster.x + 1];
+        //             map[monster.y][monster.x] = originalSquare;
+        //             monster.x = monster.x + 1;
+        //             map[monster.y][monster.x] = 4;
+        //         } else {
+        //             if (pacMan.y > monster.y) {
+        //                 if (map[monster.y + 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y++][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y + 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y < monster.y) {
+        //                 if (map[monster.y - 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y - 1][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y - 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y == monster.y) {
+        //                 console.log("equal y");
+        //             }
+        //         }
+        //     } else if (pacMan.x < monster.x) {
+        //         if (map[monster.y][monster.x - 1] !== 1) {
+        //             originalSquare = map[monster.y][monster.x - 1];
+        //             map[monster.y][monster.x] = originalSquare;
+        //             monster.x = monster.x - 1;
+        //             map[monster.y][monster.x] = 4;
+        //         } else {
+        //             if (pacMan.y > monster.y) {
+        //                 if (map[monster.y + 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y + 1][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y + 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y < monster.y) {
+        //                 if (map[monster.y - 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y - 1][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y - 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y == monster.y) {
+        //                 console.log("equal y");
+        //             }
+        //         }
+        //     } else if (pacMan.x == monster.x) {
+
+        //         if (pacMan.y > monster.y) {
+        //             if (map[monster.y + 1][monster.x] !== 1) {
+        //                 originalSquare = map[monster.y + 1][monster.x];
+        //                 map[monster.y][monster.x] = originalSquare;
+        //                 monster.y = monster.y + 1;
+        //                 map[monster.y][monster.x] = 4;
+        //             }
+        //         } else if (pacMan.y < monster.y) {
+        //             if (map[monster.y - 1][monster.x] !== 1) {
+        //                 originalSquare = map[monster.y - 1][monster.x];
+        //                 map[monster.y][monster.x] = originalSquare;
+        //                 monster.y = monster.y - 1;
+        //                 map[monster.y][monster.x] = 4;
+        //             }
+        //         } else if (pacMan.y == monster.y) {
+        //             console.log("equal y");
+        //         }
+
+        //     }
+        //     drawWorld();
+        //     scoreFn();
+
+        // }, 1000);
+
+
+
+
+
+        // setInterval(function() {
+        //     var originalSquare;
+        //     console.log(monster);
+        //     console.log(pacMan);
+        //     if (pacMan.x > monster.x) {
+        //         if (map[monster.y][monster.x + 1] !== 1) {
+        //             originalSquare = map[monster.y][monster.x + 1];
+        //             map[monster.y][monster.x] = originalSquare;
+        //             monster.x = monster.x + 1;
+        //             map[monster.y][monster.x] = 4;
+        //         } else {
+        //             if (pacMan.y > monster.y) {
+        //                 if (map[monster.y + 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y++][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y + 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y < monster.y) {
+        //                 if (map[monster.y - 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y - 1][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y - 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y == monster.y) {
+        //                 console.log("equal y");
+        //             }
+        //         }
+        //     } else if (pacMan.x < monster.x) {
+        //         if (yFlag) {
+        //             if (map[monster.y + 1][monster.x] !== 1) {
+        //                 originalSquare = map[monster.y + 1][monster.x];
+        //                 map[monster.y][monster.x] = originalSquare;
+        //                 monster.y = monster.y + 1;
+        //                 map[monster.y][monster.x] = 4;
+        //             }
+        //         }
+        //         if (map[monster.y][monster.x - 1] !== 1) {
+        //             originalSquare = map[monster.y][monster.x - 1];
+        //             map[monster.y][monster.x] = originalSquare;
+        //             monster.x = monster.x - 1;
+        //             map[monster.y][monster.x] = 4;
+        //         } else {
+        //             if (pacMan.y >= monster.y) {
+        //                 if (map[monster.y + 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y + 1][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y + 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y < monster.y) {
+        //                 if (map[monster.y - 1][monster.x] !== 1) {
+        //                     originalSquare = map[monster.y - 1][monster.x];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.y = monster.y - 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             } else if (pacMan.y == monster.y) {
+        //                 console.log("equal y");
+        //             }
+        //         }
+        //     } else if (pacMan.x == monster.x) {
+        //         console.log("equal x");
+        //         if (pacMan.y > monster.y) {
+        //             if (map[monster.y + 1][monster.x] !== 1) {
+        //                 originalSquare = map[monster.y + 1][monster.x];
+        //                 map[monster.y][monster.x] = originalSquare;
+        //                 monster.y = monster.y + 1;
+        //                 map[monster.y][monster.x] = 4;
+        //             } else {
+        //                 yFlag = true
+        //                 if (map[monster.y][monster.x + 1] !== 1) {
+        //                     originalSquare = map[monster.y][monster.x + 1];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.x = monster.x + 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+
+
+        //             }
+        //         } else if (pacMan.y < monster.y) {
+        //             if (map[monster.y - 1][monster.x] !== 1) {
+        //                 originalSquare = map[monster.y - 1][monster.x];
+        //                 map[monster.y][monster.x] = originalSquare;
+        //                 monster.y = monster.y - 1;
+        //                 map[monster.y][monster.x] = 4;
+        //             } else {
+        //                 if (map[monster.y][monster.x + 1] !== 1) {
+        //                     originalSquare = map[monster.y][monster.x + 1];
+        //                     map[monster.y][monster.x] = originalSquare;
+        //                     monster.x = monster.x + 1;
+        //                     map[monster.y][monster.x] = 4;
+        //                 }
+        //             }
+        //         } else if (pacMan.y == monster.y) {
+        //             console.log("equal y");
+        //             console.log("game over");
+        //         }
+        //     }
+        //     // else if (pacMan.y > monster.y) {
+        //     //     if (map[monster.y + 1][monster.x] !== 1) {
+        //     //         originalSquare = map[monster.y + 1][monster.x];
+        //     //         map[monster.y][monster.x] = originalSquare;
+        //     //         monster.y = monster.y + 1;
+        //     //         map[monster.y][monster.x] = 4;
+        //     //     }
+        //     // } else if (pacMan.y < monster.y) {
+        //     //     if (map[monster.y - 1][monster.x] !== 1) {
+        //     //         originalSquare = map[monster.y - 1][monster.x];
+        //     //         map[monster.y][monster.x] = originalSquare;
+        //     //         monster.y = monster.y - 1;
+        //     //         map[monster.y][monster.x] = 4;
+        //     //     }
+        //     // } else if (pacMan.y == monster.y) {
+        //     //     console.log("equal y");
+        //     // }
+        //     drawWorld();
+        //     scoreFn();
+        // }, 1000);
+
+        backToMenuBtn.addEventListener("click", function() {
+            window.location.href = "introPage.html";
+        });
+    </script>
+</body>
+
+</html>
